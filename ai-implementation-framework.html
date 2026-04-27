@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The AI Implementation Framework — Muhammad Ashher</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface2: #f0efe9;
+  --border: #e0ddd5;
+  --accent: #1D9DE4;
+  --accent-dim: rgba(29, 157, 228, 0.06);
+  --text: #1a1a1a;
+  --text-muted: #5c5c5c;
+  --text-dim: #aaa;
+  --tool1: #3b5fd4;
+  --tool1-dim: rgba(59, 95, 212, 0.07);
+  --tool2: #DA2638;
+  --tool2-dim: rgba(218, 38, 56, 0.07);
+  --tool3: #2a7a56;
+  --tool3-dim: rgba(42, 122, 86, 0.07);
+}
+
+html { background: var(--bg); }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Geist', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--tool2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.wrapper { max-width: 740px; margin: 0 auto; padding: 0 24px 100px; }
+
+/* ── HEADER ── */
+.header { padding: 64px 0 48px; border-bottom: 1px solid var(--border); margin-bottom: 56px; }
+
+.header-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-dim);
+  border: 1px solid rgba(29,157,228,0.2);
+  padding: 5px 12px; border-radius: 4px; margin-bottom: 28px;
+}
+.header-tag::before {
+  content: ''; width: 6px; height: 6px;
+  background: var(--accent); border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.header h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(36px, 6vw, 52px); font-weight: 400;
+  line-height: 1.15; margin-bottom: 16px;
+}
+.header h1 em { font-style: italic; color: var(--accent); }
+.header-sub { color: var(--text-muted); font-size: 15px; max-width: 520px; line-height: 1.75; }
+
+.header-meta {
+  display: flex; align-items: center; gap: 16px;
+  margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border);
+}
+.avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+  border: 2px solid var(--border);
+}
+.author-info strong { display: block; font-weight: 600; font-size: 14px; }
+.author-info span { font-size: 12px; color: var(--text-muted); }
+
+/* ── INTRO ── */
+.intro {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent); border-radius: 8px;
+  padding: 24px 28px; margin-bottom: 56px;
+  font-size: 15px; color: var(--text-muted); line-height: 1.8;
+}
+.intro strong { color: var(--text); font-weight: 600; }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-dim); margin-bottom: 24px;
+}
+
+/* ── CATEGORY ── */
+.category { margin-bottom: 64px; }
+.category-header {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border);
+}
+.category-number {
+  font-family: 'Instrument Serif', serif; font-size: 52px;
+  font-weight: 400; line-height: 1; color: var(--border);
+  flex-shrink: 0; width: 56px;
+}
+.category-title { font-size: 22px; font-weight: 600; line-height: 1.2; }
+.category-desc {
+  font-size: 11px; color: var(--text-dim); margin-top: 3px;
+  font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+/* ── TOOL CARD ── */
+.tool-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; margin-bottom: 20px; overflow: hidden;
+}
+.tool-card-top { padding: 24px 28px 20px; border-bottom: 1px solid var(--border); }
+.tool-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 10px;
+}
+.tool-name { font-size: 17px; font-weight: 600; }
+.tool-badge {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.06em; padding: 3px 9px; border-radius: 4px;
+  white-space: nowrap; flex-shrink: 0; margin-top: 3px;
+}
+.tool-badge.free { background: var(--tool3-dim); border: 1px solid rgba(42,122,86,0.2); color: var(--tool3); }
+.tool-badge.paid { background: var(--tool1-dim); border: 1px solid rgba(59,95,212,0.2); color: var(--tool1); }
+.tool-badge.phase { background: var(--accent-dim); border: 1px solid rgba(29,157,228,0.2); color: var(--accent); }
+.tool-desc { font-size: 14px; color: var(--text-muted); line-height: 1.75; }
+.tool-desc strong { color: var(--text); font-weight: 500; }
+
+/* ── USAGE LABELS ── */
+.usage-list { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.usage-row { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; }
+.usage-label {
+  font-family: 'DM Mono', monospace; font-size: 9px; text-transform: uppercase;
+  letter-spacing: 0.08em; padding: 2px 8px; border-radius: 3px;
+  white-space: nowrap; margin-top: 2px; flex-shrink: 0;
+}
+.usage-label.plan { background: var(--tool1-dim); color: var(--tool1); border: 1px solid rgba(59,95,212,0.2); }
+.usage-label.exec { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(29,157,228,0.2); }
+.usage-label.gen  { background: var(--tool3-dim); color: var(--tool3); border: 1px solid rgba(42,122,86,0.2); }
+.usage-label.warn { background: var(--tool2-dim); color: var(--tool2); border: 1px solid rgba(218,38,56,0.2); }
+.usage-text { color: var(--text-muted); line-height: 1.6; }
+.usage-text strong { color: var(--text); font-weight: 500; }
+
+/* ── ACCORDION ── */
+.tool-section { border-bottom: 1px solid var(--border); }
+.tool-section:last-child { border-bottom: none; }
+.tool-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px; cursor: pointer; user-select: none; transition: background 0.15s;
+}
+.tool-section-header:hover { background: var(--surface2); }
+.section-title-row { display: flex; align-items: center; gap: 10px; }
+.section-icon {
+  width: 22px; height: 22px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; flex-shrink: 0;
+}
+.section-icon.setup    { background: var(--tool1-dim); color: var(--tool1); }
+.section-icon.examples { background: var(--tool2-dim); color: var(--tool2); }
+.section-icon.prompts  { background: var(--accent-dim); color: var(--accent); }
+.section-icon.guide    { background: var(--tool3-dim); color: var(--tool3); }
+.section-title-text { font-size: 13.5px; font-weight: 500; color: var(--text); }
+.chevron { font-size: 10px; color: var(--text-dim); transition: transform 0.2s; }
+.tool-section.open .chevron { transform: rotate(180deg); }
+.tool-section-body { display: none; padding: 4px 28px 24px; }
+.tool-section.open .tool-section-body { display: block; }
+
+/* ── SETUP STEPS ── */
+.setup-steps { display: flex; flex-direction: column; gap: 14px; }
+.step { display: flex; gap: 14px; align-items: flex-start; }
+.step-num {
+  width: 24px; height: 24px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  color: var(--text-muted); flex-shrink: 0; margin-top: 1px;
+}
+.step-text { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+.step-text strong { color: var(--text); font-weight: 500; }
+
+/* ── PROMPT BLOCKS ── */
+.prompt-block {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent); border-radius: 6px;
+  padding: 16px 18px; margin-bottom: 14px;
+}
+.prompt-label {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px;
+}
+.prompt-text {
+  font-family: 'DM Mono', monospace; font-size: 12.5px;
+  color: var(--text); line-height: 1.7; white-space: pre-wrap;
+}
+
+/* ── EXAMPLE BLOCKS ── */
+.example-block {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 18px 20px; margin-bottom: 14px;
+}
+.example-label {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--tool2); margin-bottom: 8px;
+}
+.example-text { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; }
+.example-text strong { color: var(--text); font-weight: 500; }
+
+/* ── GUIDE BLOCK ── */
+.guide-block { display: flex; flex-direction: column; gap: 10px; }
+.guide-row {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 14px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 6px;
+}
+.guide-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+.guide-text { font-size: 13.5px; color: var(--text-muted); line-height: 1.65; }
+.guide-text strong { color: var(--text); font-weight: 500; }
+
+/* ── NOTE BOX ── */
+.note-box {
+  background: rgba(218,38,56,0.05); border: 1px solid rgba(218,38,56,0.18);
+  border-radius: 6px; padding: 12px 16px;
+  font-size: 13px; color: var(--text-muted); line-height: 1.65; margin-top: 14px;
+}
+.note-box strong { color: var(--tool2); font-weight: 500; }
+
+/* ── INLINE CTA ── */
+.inline-cta {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 15px 28px;
+  background: var(--surface2); border-top: 1px solid var(--border); flex-wrap: wrap;
+}
+.inline-cta-text { font-size: 13px; color: var(--text-muted); }
+.inline-cta-text strong { color: var(--text); font-weight: 500; }
+.inline-cta-link {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--tool2);
+  text-decoration: none; letter-spacing: 0.04em; white-space: nowrap; font-weight: 500;
+}
+.inline-cta-link:hover { text-decoration: underline; }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--border); margin: 0 0 56px; }
+
+/* ── SUMMARY TABLE ── */
+.summary {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin-bottom: 56px;
+}
+.summary-header {
+  padding: 16px 24px; border-bottom: 1px solid var(--border);
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim);
+}
+.summary-row {
+  display: grid; grid-template-columns: 1.2fr 2fr 80px;
+  gap: 16px; padding: 13px 24px; border-bottom: 1px solid var(--border);
+  align-items: center; font-size: 13.5px; transition: background 0.15s;
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-row:hover { background: var(--surface2); }
+.summary-tool { font-weight: 500; }
+.summary-purpose { color: var(--text-muted); }
+.cost-badge {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  text-align: center; padding: 3px 0; border-radius: 4px;
+}
+.cost-badge.discovery { background: var(--tool1-dim); border: 1px solid rgba(59,95,212,0.2); color: var(--tool1); }
+.cost-badge.audit     { background: var(--accent-dim); border: 1px solid rgba(29,157,228,0.2); color: var(--accent); }
+.cost-badge.design    { background: var(--tool3-dim); border: 1px solid rgba(42,122,86,0.2); color: var(--tool3); }
+.cost-badge.build     { background: var(--tool2-dim); border: 1px solid rgba(218,38,56,0.2); color: var(--tool2); }
+
+/* ── MAIN CTA ── */
+.main-cta {
+  background: var(--text); border-radius: 12px;
+  padding: 40px; margin-bottom: 56px; text-align: center;
+}
+.main-cta h3 {
+  font-family: 'Instrument Serif', serif; font-size: 28px;
+  font-weight: 400; color: var(--bg); margin-bottom: 10px; line-height: 1.3;
+}
+.main-cta p {
+  font-size: 14px; color: #aaa; line-height: 1.7; margin-bottom: 24px;
+  max-width: 420px; margin-left: auto; margin-right: auto;
+}
+.cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.cta-btn {
+  font-family: 'Geist', sans-serif; font-size: 13.5px; font-weight: 500;
+  padding: 10px 22px; border-radius: 6px; cursor: pointer;
+  text-decoration: none; transition: opacity 0.15s;
+}
+.cta-btn:hover { opacity: 0.85; }
+.cta-btn.primary { background: var(--accent); color: #fff; }
+.cta-btn.secondary { background: rgba(255,255,255,0.1); color: #ddd; border: 1px solid rgba(255,255,255,0.15); }
+
+/* ── FOOTER ── */
+.footer { border-top: 1px solid var(--border); padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.footer-note { font-size: 13px; color: var(--text-dim); line-height: 1.7; }
+.footer-brand { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-dim); letter-spacing: 0.08em; }
+.footer-brand span { color: var(--accent); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:560px){
+  .header { padding: 40px 0 32px; }
+  .tool-card-top,.tool-section-header,.tool-section-body,.inline-cta { padding-left:20px; padding-right:20px; }
+  .summary-row { grid-template-columns: 1fr 1fr; }
+  .cost-badge { display: none; }
+  .main-cta { padding: 28px 24px; }
+  .cta-buttons { flex-direction: column; }
+  .cta-btn { text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-tag">Founder Resource · <a href="https://outstep.co" target="_blank" style="color:inherit;text-decoration:none;">Outstep</a></div>
+    <h1>The AI <em>Implementation</em> Framework</h1>
+    <p class="header-sub">Why most B2B AI projects fail — and the exact five-phase process I use to make them succeed. Built from 15+ real deployments across SaaS, healthcare, lending, and recruiting.</p>
+    <div class="header-meta">
+      <img class="avatar" src="https://media.licdn.com/dms/image/v2/D4E03AQECEx8TC2FkTQ/profile-displayphoto-crop_800_800/B4EZpi5ozXHgAI-/0/1762595869827?e=1778716800&v=beta&t=vhRCVThhrWxsV8bpqX6wcGFOi8xmx10J6QUfAlrIAW8" alt="Muhammad Ashher">
+      <div class="author-info">
+        <strong>Muhammad Ashher</strong>
+        <span>Founder & CEO, <a href="https://outstep.co" target="_blank" style="color:inherit;text-decoration:none;">Outstep</a> · Top Rated Plus on Upwork</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- INTRO -->
+  <div class="intro">
+    I've watched founders spend five and six figures on AI projects that never ship — or ship and never get used. <strong>The failure pattern is almost always the same.</strong> This framework is what I wish every client had read before our first call. Work through it in order. By the end, you'll know exactly whether AI is right for your next initiative — and if it is, how to do it without wasting a dollar.
+  </div>
+
+  <!-- PHASE 1 -->
+  <div class="section-label">01 — The Framework</div>
+  <div class="category">
+    <div class="category-header">
+      <div class="category-number">01</div>
+      <div class="category-info">
+        <div class="category-title">Problem-First Discovery</div>
+        <div class="category-desc">Start Here · Before Any Tech Decision · Non-Negotiable</div>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-card-top">
+        <div class="tool-header">
+          <div class="tool-name">The Pain Mapping Exercise</div>
+          <div class="tool-badge phase">Phase 1</div>
+        </div>
+        <div class="tool-desc">
+          The single biggest reason AI implementations fail: <strong>teams pick a model first, then look for a problem to solve.</strong> That's backwards. Before you open a single API doc, you need to identify a workflow that is painful, expensive, and repetitive. This exercise forces you to do that on paper before writing a line of code.
+        </div>
+        <div class="usage-list">
+          <div class="usage-row">
+            <div class="usage-label warn">Red Flag</div>
+            <div class="usage-text"><strong>You're starting with the technology</strong> — "We should build something with GPT-4o" is not a problem statement.</div>
+          </div>
+          <div class="usage-row">
+            <div class="usage-label gen">Green Light</div>
+            <div class="usage-text"><strong>You're starting with a cost</strong> — "Our ops team spends 3 hours a day manually triaging inbound leads" is a problem statement.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-sections">
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon setup">⚙</div>
+              <div class="section-title-text">The Pain Mapping Process</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="setup-steps">
+              <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text"><strong>List every manual, repetitive task</strong> your team does more than twice a week. Don't filter — write everything down, no matter how small.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text"><strong>Score each one</strong> on three dimensions: frequency (how often), cost (hours × hourly rate), and error rate (how often humans get it wrong). Use a simple 1–5 scale.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text"><strong>Identify the highest-scoring item.</strong> That is your AI candidate. If two items are tied, pick the one where errors are most expensive — not most frequent.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-text"><strong>Write a one-sentence problem statement:</strong> "Our [role] spends [X hours/week] manually [doing Y], which costs us approximately $[Z/month] and has an error rate of [N]%."</div>
+              </div>
+              <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-text"><strong>Sanity-check it.</strong> If you solve this completely, what is the business outcome? If you can't name a clear outcome (faster, cheaper, fewer errors, more revenue), it's the wrong problem.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon prompts">✦</div>
+              <div class="section-title-text">Diagnostic Questions to Ask Your Team</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="prompt-block">
+              <div class="prompt-label">Pain Mapping Worksheet</div>
+              <div class="prompt-text">1. What's the most annoying thing you do every week that feels like it shouldn't require a human?
+
+2. Where do you copy-paste the same information between two systems more than 3x/week?
+
+3. What decision do you make repeatedly that follows a clear pattern?
+
+4. Where does work pile up when someone is out sick?
+
+5. What would you automate first if you had an engineer for a week?</div>
+            </div>
+            <div class="note-box">
+              <strong>Important:</strong> Run this session with the people who actually do the work — not just leadership. Executives describe processes at 30,000 feet. Operators know where the real friction is.
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon examples">◈</div>
+              <div class="section-title-text">Real Example</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="example-block">
+              <div class="example-label">B2B SaaS Client — Lead Intelligence</div>
+              <div class="example-text">A founder came to us wanting to "build an AI sales tool." No defined problem. We ran the pain mapping exercise with their SDR team and found the real issue: <strong>each rep spent 45 minutes researching a single prospect before outreach.</strong> They had 80 prospects a week per rep. The solution wasn't a sales tool — it was a research automation agent that compressed 45-minute research sessions into 90 seconds. <strong>The team got back 60+ hours per week per rep.</strong></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="inline-cta">
+        <div class="inline-cta-text">Not sure which process to start with? <strong>DM me and I'll walk you through it in 20 minutes.</strong></div>
+        <a href="https://www.linkedin.com/in/muhammad-ashher" class="inline-cta-link" target="_blank">linkedin.com/in/muhammad-ashher →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PHASE 2 -->
+  <div class="section-label">02 — The Framework</div>
+  <div class="category">
+    <div class="category-header">
+      <div class="category-number">02</div>
+      <div class="category-info">
+        <div class="category-title">The Data Reality Audit</div>
+        <div class="category-desc">Before You Build · AI Is Only As Good As What You Feed It</div>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-card-top">
+        <div class="tool-header">
+          <div class="tool-name">Audit Your Data Before Touching Any API</div>
+          <div class="tool-badge phase">Phase 2</div>
+        </div>
+        <div class="tool-desc">
+          "We have tons of data" is the most dangerous sentence in AI discovery calls. <strong>I've heard it dozens of times. It almost always means 200 rows in a Google Sheet, or data locked inside PDFs, or three systems that don't talk to each other.</strong> Before you write a single line of code, you need an honest picture of what you're working with.
+        </div>
+        <div class="usage-list">
+          <div class="usage-row">
+            <div class="usage-label warn">Red Flag</div>
+            <div class="usage-text"><strong>Your data lives in someone's head</strong> — "our best salesperson just knows which leads to prioritise" is not a dataset.</div>
+          </div>
+          <div class="usage-row">
+            <div class="usage-label gen">Green Light</div>
+            <div class="usage-text"><strong>You have structured historical examples</strong> — 500+ rows with inputs and known correct outputs means you can train, evaluate, and validate.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-sections">
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon setup">⚙</div>
+              <div class="section-title-text">The 5-Point Data Audit</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="setup-steps">
+              <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text"><strong>Where does the data live?</strong> List every system, spreadsheet, inbox, and document where relevant data is stored. If it's in more than three places, you have a data integration problem before you have an AI problem.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text"><strong>Is it structured or unstructured?</strong> Structured = rows and columns, queryable. Unstructured = PDFs, emails, notes, audio. Both are usable, but they require different approaches and different timelines.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text"><strong>How much do you actually have?</strong> Count it. For classification or extraction tasks, you need at minimum 100–200 labelled examples to evaluate performance. For retrieval (RAG) use cases, you need clean, consistent source documents.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-text"><strong>Is it current and consistent?</strong> Old data + changed processes = misleading results. Check when the data was last updated and whether the format has changed over time.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-text"><strong>Are there legal or compliance constraints?</strong> HIPAA, GDPR, SOC 2 — know your constraints before you choose any provider or architecture. This is non-negotiable and often overlooked until it's a problem.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon guide">▤</div>
+              <div class="section-title-text">What To Do If Your Data Isn't Ready</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="guide-block">
+              <div class="guide-row">
+                <div class="guide-icon">🗂️</div>
+                <div class="guide-text"><strong>Start collecting now.</strong> Before you can automate a decision, you need examples of humans making that decision correctly. Instrument your current process to capture input + output pairs as you work.</div>
+              </div>
+              <div class="guide-row">
+                <div class="guide-icon">🔗</div>
+                <div class="guide-text"><strong>Fix the integration layer first.</strong> If your data is siloed across five systems, build the connectors before building the AI. A well-connected but dumb system beats an intelligent but blind one.</div>
+              </div>
+              <div class="guide-row">
+                <div class="guide-icon">📋</div>
+                <div class="guide-text"><strong>Use LLMs for unstructured data extraction.</strong> You can often use an AI model to clean and structure your messy existing data — before using it to train or power a second AI workflow. Two-phase pipelines are very common in practice.</div>
+              </div>
+              <div class="guide-row">
+                <div class="guide-icon">⏳</div>
+                <div class="guide-text"><strong>Set a data-readiness timeline, not a build timeline.</strong> If your data needs 6 weeks of cleanup, your AI timeline starts in week 7 — not week 1. Build this into your project plan honestly.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon examples">◈</div>
+              <div class="section-title-text">Real Example</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="example-block">
+              <div class="example-label">Asset-Based Lending Firm — Document Processing</div>
+              <div class="example-text">Client wanted an AI agent to automatically process loan applications. Discovery revealed their documents were inconsistently formatted PDFs from 14 different sources, stored in three different systems with no consistent naming convention. <strong>We spent 3 weeks building a data normalisation layer before touching any AI logic.</strong> The resulting system processed applications in under 2 minutes vs. a 4-hour manual review. Skipping the data audit would have produced a broken agent that worked 40% of the time — which is worse than no agent at all.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="inline-cta">
+        <div class="inline-cta-text">Running a data audit and not sure what you're looking at? <strong>Follow me for a breakdown post on data readiness scores.</strong></div>
+        <a href="https://www.linkedin.com/in/muhammad-ashher" class="inline-cta-link" target="_blank">Follow on LinkedIn →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PHASE 3 -->
+  <div class="section-label">03 — The Framework</div>
+  <div class="category">
+    <div class="category-header">
+      <div class="category-number">03</div>
+      <div class="category-info">
+        <div class="category-title">User-Centric Design</div>
+        <div class="category-desc">Build For Adoption · Not For Demos · The Silent Killer</div>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-card-top">
+        <div class="tool-header">
+          <div class="tool-name">Designing for the Actual User, Not the Boardroom</div>
+          <div class="tool-badge phase">Phase 3</div>
+        </div>
+        <div class="tool-desc">
+          A demo that wows investors is very different from a product a busy ops manager will use every single day. <strong>This is the silent killer of AI implementations.</strong> The AI works. The demo looks great. Then nobody uses it — because it added friction instead of removing it. This phase is about designing for the person who will touch your tool 50 times a day.
+        </div>
+        <div class="usage-list">
+          <div class="usage-row">
+            <div class="usage-label warn">Red Flag</div>
+            <div class="usage-text"><strong>Your MVP requires a new habit</strong> — if users need to open a new tab, learn a new interface, or change their workflow to use your tool, adoption will die.</div>
+          </div>
+          <div class="usage-row">
+            <div class="usage-label gen">Green Light</div>
+            <div class="usage-text"><strong>Your AI lives where the work already happens</strong> — Slack, email, CRM, or an existing dashboard. Zero learning curve = maximum adoption.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-sections">
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon setup">⚙</div>
+              <div class="section-title-text">The Adoption Design Checklist</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="setup-steps">
+              <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text"><strong>Shadow the actual user for one hour.</strong> Watch how they do the job today. Note where they switch tabs, copy-paste, wait, or look frustrated. Your AI should eliminate those exact moments — nothing else.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text"><strong>Define the "time to value."</strong> How long from the moment a user interacts with your tool to the moment they get the output they needed? Target under 10 seconds for anything used daily. If it's longer, redesign the flow.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text"><strong>Design for failure states first.</strong> What does the user see when the AI is wrong? A tool that fails gracefully (shows confidence scores, flags uncertainty, lets the user override) gets trusted. A tool that fails silently gets abandoned.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-text"><strong>Put it where the work already happens.</strong> Slack bots, CRM plugins, email integrations, browser extensions. The best AI tools are invisible — they enhance the existing workflow, not replace it with a new one.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-text"><strong>Run a one-week pilot with one real user before broad rollout.</strong> Not a test account. Not a staging environment. One real person, real tasks, real feedback. Fix everything they complain about before going wide.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon prompts">✦</div>
+              <div class="section-title-text">Questions to Ask Before You Build Any Interface</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="prompt-block">
+              <div class="prompt-label">User Design Questions</div>
+              <div class="prompt-text">1. Where does this person spend 80% of their working day? (That's where your AI should live.)
+
+2. What is the ONE thing they need to do faster? (Build for that. Only that. To start.)
+
+3. What does "wrong output" look like — and how will they know?
+
+4. If this tool gave a bad answer, what's the worst case scenario for them personally?
+
+5. Would they use this if their manager wasn't watching? (If no, it's a compliance tool, not a productivity tool.)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon examples">◈</div>
+              <div class="section-title-text">Real Example</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="example-block">
+              <div class="example-label">Recruiting Firm — Candidate Screening Agent</div>
+              <div class="example-text">First version of the tool required recruiters to log in to a separate dashboard to see AI-generated candidate summaries. Adoption was near zero — recruiters didn't want another tab. We rebuilt the interface as a Slack integration: whenever a new CV hit the ATS, the agent posted a structured summary card directly into the recruiter's Slack channel with a one-click "Book Interview" button. <strong>Adoption went from ~10% to 94% in two weeks.</strong> Same AI. Different interface.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="inline-cta">
+        <div class="inline-cta-text">Built something your team isn't using? <strong>The interface is almost always the problem — DM me.</strong></div>
+        <a href="https://www.linkedin.com/in/muhammad-ashher" class="inline-cta-link" target="_blank">linkedin.com/in/muhammad-ashher →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PHASE 4 -->
+  <div class="section-label">04 — The Framework</div>
+  <div class="category">
+    <div class="category-header">
+      <div class="category-number">04</div>
+      <div class="category-info">
+        <div class="category-title">The Single Workflow Rule</div>
+        <div class="category-desc">Start Small · Prove ROI · Then Expand</div>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-card-top">
+        <div class="tool-header">
+          <div class="tool-name">One Bottleneck. Solved Completely. Then Scale.</div>
+          <div class="tool-badge phase">Phase 4</div>
+        </div>
+        <div class="tool-desc">
+          The companies that win with AI don't boil the ocean. They pick one workflow, one bottleneck, and they solve it completely. <strong>Slow and deliberate beats fast and broken every time.</strong> This phase is about scoping your first AI initiative correctly so it ships, proves ROI, and earns the budget for everything that comes next.
+        </div>
+        <div class="usage-list">
+          <div class="usage-row">
+            <div class="usage-label warn">Red Flag</div>
+            <div class="usage-text"><strong>Your v1 scope covers 6 workflows</strong> — "We want to automate onboarding, invoicing, support, scheduling, and reporting" is not a v1. That's a v5.</div>
+          </div>
+          <div class="usage-row">
+            <div class="usage-label gen">Green Light</div>
+            <div class="usage-text"><strong>You have a single, measurable success metric</strong> — "Reduce time-to-first-reply from 4 hours to under 10 minutes" is a v1 scope.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-sections">
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon setup">⚙</div>
+              <div class="section-title-text">How to Scope Your v1 Correctly</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="setup-steps">
+              <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text"><strong>Pick the single most expensive manual process</strong> identified in Phase 1. Not the most exciting one — the most expensive one. That's the one that will justify the investment fastest.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text"><strong>Define the exact start and end of that workflow.</strong> "Marketing to close" is not a workflow. "Incoming lead form submission → qualified/unqualified classification → Slack notification to the right AE" is a workflow.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text"><strong>Set a measurable baseline before you build.</strong> Time it. Count it. Cost it. "We currently take 3 days on average to respond to RFPs and it costs us $800 per RFP in manual labour" gives you something to compare against after launch.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-text"><strong>Define a 30-day success criterion.</strong> What number needs to move for this to be considered a success? Set it before you build. Changing the goalposts after launch is how projects get declared "good enough" when they aren't.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-text"><strong>Build a "phase 2 backlog" but lock it away.</strong> Write down every other thing you want to automate, put it in a doc, and agree not to touch it until v1 hits its success criterion. This prevents scope creep from killing your first win.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon guide">▤</div>
+              <div class="section-title-text">The Expand-After-Win Playbook</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="guide-block">
+              <div class="guide-row">
+                <div class="guide-icon">✅</div>
+                <div class="guide-text"><strong>Win → Document → Replicate.</strong> Once v1 hits its metric, document exactly what you built and why it worked. That documentation is your blueprint for every subsequent workflow. Your second automation takes 40% less time than your first.</div>
+              </div>
+              <div class="guide-row">
+                <div class="guide-icon">📊</div>
+                <div class="guide-text"><strong>Use the ROI from v1 to fund v2.</strong> If your first automation saves $8,000/month in labour, that's your budget for the next project. The AI programme funds itself from the first win. Frame it this way to leadership.</div>
+              </div>
+              <div class="guide-row">
+                <div class="guide-icon">🔁</div>
+                <div class="guide-text"><strong>Prioritise the phase 2 backlog by adjacency.</strong> The easiest next workflow to automate is the one that uses the same data sources and the same integrations as v1. Build on your infrastructure, not from scratch.</div>
+              </div>
+              <div class="guide-row">
+                <div class="guide-icon">📣</div>
+                <div class="guide-text"><strong>Make the win visible internally.</strong> Announce the v1 metric improvement to the team. Momentum is a product. When people see AI working, they volunteer the next use case. Your best ideas for v3 and v4 will come from the team, not leadership.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon examples">◈</div>
+              <div class="section-title-text">Real Example</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="example-block">
+              <div class="example-label">Operations SaaS — From One Agent to Fourteen</div>
+              <div class="example-text">We started with a single workflow: automatically summarising daily deal activity from their CRM into a Slack digest. Took 3 weeks to build. <strong>Saved 2.5 hours of manual reporting per week for a team of five.</strong> That win created internal buy-in to expand. Over the following 8 months, we built 13 more components on top of the same infrastructure — contract parsing, investor reporting, compliance flagging, and more. The first win funded the entire programme.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="inline-cta">
+        <div class="inline-cta-text">Not sure which workflow to start with? <strong>Comment "AUDIT" on my latest LinkedIn post for a free process evaluation.</strong></div>
+        <a href="https://www.linkedin.com/in/muhammad-ashher" class="inline-cta-link" target="_blank">See the post →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PHASE 5 -->
+  <div class="section-label">05 — The Framework</div>
+  <div class="category">
+    <div class="category-header">
+      <div class="category-number">05</div>
+      <div class="category-info">
+        <div class="category-title">AI as Leverage — Not a Science Project</div>
+        <div class="category-desc">Revenue-First · AI as a Feature · Build on Real Problems</div>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-card-top">
+        <div class="tool-header">
+          <div class="tool-name">Connecting Every AI Initiative to a Revenue Outcome</div>
+          <div class="tool-badge phase">Phase 5</div>
+        </div>
+        <div class="tool-desc">
+          AI should make your product or service better, faster, or cheaper. If you're building AI for the sake of building AI, <strong>you're building a science project, not a business.</strong> Every AI initiative needs a line item that connects it to real revenue — either protecting revenue you have or unlocking revenue you don't.
+        </div>
+        <div class="usage-list">
+          <div class="usage-row">
+            <div class="usage-label warn">Red Flag</div>
+            <div class="usage-text"><strong>Your AI initiative has no owner</strong> — if no one's performance review is tied to the outcome of this project, it will never be prioritised properly.</div>
+          </div>
+          <div class="usage-row">
+            <div class="usage-label gen">Green Light</div>
+            <div class="usage-text"><strong>The initiative has a clear P&L connection</strong> — "This reduces our cost per acquisition by 30%" or "This lets us handle 3x the volume without hiring."</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-sections">
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon setup">⚙</div>
+              <div class="section-title-text">The Revenue Linkage Test</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="setup-steps">
+              <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text"><strong>Ask: Does this protect existing revenue?</strong> Examples: AI-powered churn detection, faster support resolution, automated QA. These reduce revenue loss. They count.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text"><strong>Ask: Does this unlock new revenue?</strong> Examples: AI that enables you to serve 3x more clients, enter a new segment, or close deals faster. These grow the top line. They count.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text"><strong>Ask: Does this reduce the cost of delivery?</strong> Examples: Automating services that previously required human labour, reducing headcount for scaling, compressing turnaround times. These improve margins. They count.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-text"><strong>If none of the above apply — stop.</strong> "It would be cool to have an AI chatbot on our website" that doesn't move any of those three needles is a vanity project. Don't build it. Not yet.</div>
+              </div>
+              <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-text"><strong>Write the value proposition in one sentence:</strong> "By building [X], we will [protect/unlock/reduce] approximately $[Y] per [month/quarter/year]." If you can't write that sentence, the initiative isn't ready to build.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon guide">▤</div>
+              <div class="section-title-text">How Winning Founders Use AI Right Now</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="guide-block">
+              <div class="guide-row">
+                <div class="guide-icon">⚡</div>
+                <div class="guide-text"><strong>They use AI as leverage on their highest-value activity.</strong> If a founder's highest value is closing deals, they automate everything that isn't closing deals — research, scheduling, follow-up, reporting. Not the other way around.</div>
+              </div>
+              <div class="guide-row">
+                <div class="guide-icon">🎯</div>
+                <div class="guide-text"><strong>They don't chase the newest model.</strong> GPT-4o vs Claude vs Gemini matters far less than whether your data pipeline is clean and your prompts are tight. The model is 20% of the outcome. The architecture is 80%.</div>
+              </div>
+              <div class="guide-row">
+                <div class="guide-icon">🔒</div>
+                <div class="guide-text"><strong>They keep humans in the loop for high-stakes decisions.</strong> AI handles the volume. Humans handle the exceptions and the relationships. Never fully automate anything where a mistake costs you a client or creates a legal liability.</div>
+              </div>
+              <div class="guide-row">
+                <div class="guide-icon">📈</div>
+                <div class="guide-text"><strong>They treat AI as an infrastructure investment, not a one-time project.</strong> The value compounds. Each automation you build makes the next one faster and cheaper. Budget for it like a team member, not a software licence.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-section open">
+          <div class="tool-section-header" onclick="toggle(this)">
+            <div class="section-title-row">
+              <div class="section-icon examples">◈</div>
+              <div class="section-title-text">Real Example</div>
+            </div>
+            <div class="chevron">▼</div>
+          </div>
+          <div class="tool-section-body">
+            <div class="example-block">
+              <div class="example-label">Private Equity — Deal Flow Intelligence</div>
+              <div class="example-text">An independent sponsor was spending 20+ hours a week on initial deal screening — reading CIMs, pulling comps, building first-pass models. We built a multi-agent system that processed inbound deals overnight: extracted key financials from CIMs, ran comparable transaction searches, flagged red flags, and posted a structured deal brief to Slack by 8am. <strong>The sponsor reclaimed 15+ hours per week and increased their deal review capacity by 4x without adding headcount.</strong> The AI didn't replace their judgement — it eliminated the grunt work so their judgement could operate at higher volume.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="inline-cta">
+        <div class="inline-cta-text">Want to see what a revenue-linked AI roadmap looks like for your business? <strong>Schedule a 30-min call — no pitch, just the framework.</strong></div>
+        <a href="https://cal.com/ashher/30min" class="inline-cta-link" target="_blank">Book 30 mins →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SUMMARY TABLE -->
+  <div class="section-label">Quick Reference</div>
+  <div class="summary">
+    <div class="summary-header">The 5-Phase Framework at a Glance</div>
+    <div class="summary-row">
+      <div class="summary-tool">01 — Problem Discovery</div>
+      <div class="summary-purpose">Map your most expensive manual processes before touching any tech</div>
+      <div class="cost-badge discovery">Phase 1</div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-tool">02 — Data Audit</div>
+      <div class="summary-purpose">Assess data quality, volume, and compliance constraints</div>
+      <div class="cost-badge audit">Phase 2</div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-tool">03 — User Design</div>
+      <div class="summary-purpose">Design for adoption by real users, not demos for investors</div>
+      <div class="cost-badge design">Phase 3</div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-tool">04 — Single Workflow</div>
+      <div class="summary-purpose">Scope one workflow, prove ROI, then use that win to expand</div>
+      <div class="cost-badge build">Phase 4</div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-tool">05 — Revenue Linkage</div>
+      <div class="summary-purpose">Connect every AI initiative to protecting or growing revenue</div>
+      <div class="cost-badge discovery">Phase 5</div>
+    </div>
+  </div>
+
+  <!-- MAIN CTA -->
+  <div class="main-cta">
+    <h3>Ready to run this framework<br>on your own business?</h3>
+    <p>At <a href="https://outstep.co" target="_blank" style="color:#1D9DE4;text-decoration:none;">Outstep</a>, we build AI automation systems for B2B founders — multi-agent pipelines, MCP integrations, and workflow automation that ships in weeks, not quarters. Let's find your first win together.</p>
+    <div class="cta-buttons">
+      <a href="https://www.linkedin.com/in/muhammad-ashher" class="cta-btn primary" target="_blank">Connect on LinkedIn</a>
+      <a href="https://cal.com/ashher/30min" class="cta-btn secondary" target="_blank">Schedule a Discovery Call</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-note">You received this because you commented on Muhammad Ashher's LinkedIn post about why AI implementations fail. This is the full framework referenced in that post.</div>
+    <div class="footer-brand"><a href="https://outstep.co" target="_blank" style="color:inherit;text-decoration:none;">Outstep</a> · <span>AI</span> · Agents · Automation · Dev · Cloud</div>
+  </div>
+
+</div>
+<script>
+  function toggle(header) { header.parentElement.classList.toggle('open'); }
+  document.querySelectorAll('.tool-section').forEach(s => s.classList.add('open'));
+</script>
+</body>
+</html>
